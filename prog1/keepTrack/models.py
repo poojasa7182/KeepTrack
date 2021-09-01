@@ -1,5 +1,7 @@
 '''models used - user, project, lists, cards, comment_c/l/p'''
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from datetime import datetime
 from django.db.models.base import Model
 from django.db.models.constraints import UniqueConstraint
 from django.db.models.deletion import SET_NULL
@@ -7,7 +9,7 @@ from taggit.managers import TaggableManager
 from ckeditor.fields import RichTextField 
 
 # Create your models here.
-class User(models.Model):
+class Users(AbstractUser):
     '''
     user details
     username,name,
@@ -37,12 +39,12 @@ class Project(models.Model):
     '''
 
     project_name = models.CharField(max_length=200,unique=True)
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
     wiki = RichTextField()
     is_completed = models.BooleanField(default=False)
-    creator = models.ForeignKey(to=User, null=True, on_delete=SET_NULL)
-    members_p = models.ManyToManyField(User, related_name='members_p')
+    creator = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='proj_creator')
+    members_p = models.ManyToManyField(Users, related_name='members_p')
 
     class Meta:
         ordering = ['due_date']
@@ -61,11 +63,11 @@ class List(models.Model):
 
     list_name = models.CharField(max_length=200,unique=False)
     project_l = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
     tags_l = TaggableManager()
-    members_l = models.ManyToManyField(User, related_name='members_l')
+    members_l = models.ManyToManyField(Users, related_name='members_l')
 
 
     class Meta(object):
@@ -89,17 +91,17 @@ class Card(models.Model):
     card_name = models.CharField(max_length=200,unique=False)
     list_c = models.ForeignKey(to=List, on_delete=models.CASCADE)
     project_c = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
-    members_c = models.ManyToManyField(User)
+    members_c = models.ManyToManyField(Users, related_name='members_c')
     description = models.TextField()
     tags_c = TaggableManager()
 
     class Meta(object):
         ordering = ['due_date']
         '''unique card names in a particular list model'''
-        UniqueConstraint(fields=['list_c','card_name'], name='unique_card')
+        UniqueConstraint(fields=['project_c','list_c','card_name'], name='unique_card')
 
     def __str__(self):
         return self.card_name
@@ -110,8 +112,8 @@ class Comment(models.Model):
     '''
 
     comment_content = models.TextField()
-    sender = models.ForeignKey(to=User, null=True, on_delete=SET_NULL)
-    time = models.DateTimeField()
+    sender = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='comment_user')
+    time = models.DateTimeField(default=datetime.now)
     card = models.ForeignKey(to=Card, blank=True, on_delete=models.CASCADE)
     list = models.ForeignKey(to=List, blank=True, on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project,on_delete=models.CASCADE)
