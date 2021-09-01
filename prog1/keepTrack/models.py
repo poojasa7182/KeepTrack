@@ -45,7 +45,8 @@ class Project(models.Model):
     is_completed = models.BooleanField(default=False)
     creator = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='proj_creator')
     members_p = models.ManyToManyField(Users, related_name='members_p')
-
+    project_admins = models.ManyToManyField(Users, related_name='members_p_a')
+    
     class Meta:
         ordering = ['due_date']
 
