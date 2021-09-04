@@ -84,7 +84,16 @@ DATABASES = {
     }
 }
 
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'trello_backend',
+#         'HOST': '127.0.0.1',
+#         'PORT': '3306',
+#         'USER': MYSQL_username,
+#         'PASSWORD': MYSQL_password,
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

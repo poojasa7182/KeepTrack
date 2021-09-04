@@ -13,6 +13,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+        read_only_fields=['creator']
 
 class ListSerializer(serializers.ModelSerializer):
     '''List Serilizer'''
@@ -31,3 +32,26 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+
+class ProjectCardSerializer(serializers.ModelSerializer):
+    card = CardSerializer(many=True, read_only = True)
+    # list = ListSerializer(many = True , read_only = True)
+    class Meta:
+        model = Project
+        fields = ['project_name','card']
+        read_only_fields = ['card']
+
+class CardProjectSerializer(serializers.ModelSerializer):
+    project_c = ProjectSerializer()
+    list_c  = ListSerializer()
+    # list = ListSerializer(many = True , read_only = True)
+    class Meta:
+        model = Card
+        fields = ['card_name','project_c','list_c']
+
+# class CardListProjectSerializer(serializers.ModelSerializer):
+#     card = ProjectSerializer(many=True)
+#     class Meta:
+#         model = Card
+#         fields = ['card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description','tags_c','card']

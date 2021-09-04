@@ -17,7 +17,8 @@ class Users(AbstractUser):
     banned-True/False,
     details-position/branch/year
     '''
-
+    # need to add image for users
+    #is_active?
     username = models.CharField(max_length=100,unique=True)
     name = models.CharField(max_length=100)
     is_admin = models.BooleanField(default=False)
@@ -37,15 +38,15 @@ class Project(models.Model):
     completed- True/False
     wiki-primary details abt the project 
     '''
-
+    #need to add project for users
     project_name = models.CharField(max_length=200,unique=True)
     start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
     wiki = RichTextField()
     is_completed = models.BooleanField(default=False)
     creator = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='proj_creator')
-    members_p = models.ManyToManyField(Users, related_name='members_p')
-    project_admins = models.ManyToManyField(Users, related_name='members_p_a')
+    members_p = models.ManyToManyField(Users, related_name='projects')
+    project_admins = models.ManyToManyField(Users, related_name='project_admin')
     
     class Meta:
         ordering = ['due_date']
@@ -68,7 +69,7 @@ class List(models.Model):
     due_date = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
     tags_l = TaggableManager()
-    members_l = models.ManyToManyField(Users, related_name='members_l')
+    members_l = models.ManyToManyField(Users, related_name='lists')
 
 
     class Meta(object):
@@ -91,11 +92,11 @@ class Card(models.Model):
 
     card_name = models.CharField(max_length=200,unique=False)
     list_c = models.ForeignKey(to=List, on_delete=models.CASCADE)
-    project_c = models.ForeignKey(to=Project, on_delete=models.CASCADE)
+    project_c = models.ForeignKey(to=Project, on_delete=models.CASCADE,related_name='card')
     start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
-    members_c = models.ManyToManyField(Users, related_name='members_c')
+    members_c = models.ManyToManyField(Users, related_name='cards')
     description = models.TextField()
     tags_c = TaggableManager()
 

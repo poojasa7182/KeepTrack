@@ -1,13 +1,14 @@
 '''Permissions for various views in the app'''
 from rest_framework import permissions
 
-class IsAdmin(permissions.Basepermission):
+'''safe methods - get/options/head'''
+class IsAdmin(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
         return False
 
-class  IsAdminOrTeamMember(permissions.Basepermission):
+class  IsAdminOrTeamMember(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
@@ -15,7 +16,7 @@ class  IsAdminOrTeamMember(permissions.Basepermission):
             return True
         return False
 
-class  IsAdminOrTeamMember_l(permissions.Basepermission):
+class  IsAdminOrTeamMember_l(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
@@ -25,7 +26,7 @@ class  IsAdminOrTeamMember_l(permissions.Basepermission):
             return True
         return False
 
-class  IsAdminOrTeamMember_c(permissions.Basepermission):
+class  IsAdminOrTeamMember_c(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
@@ -37,7 +38,7 @@ class  IsAdminOrTeamMember_c(permissions.Basepermission):
             return True
         return False
 
-class IsAdminOrProjectAdmin(permissions.Basepermission):
+class IsAdminOrProjectAdmin(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True

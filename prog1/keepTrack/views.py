@@ -1,14 +1,124 @@
-from django.http.response import HttpResponseNotAllowed
+from django.http.response import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect,HttpResponseBadRequest
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect,HttpResponseBadRequest
 from requests.api import request
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
+from rest_framework import viewsets
+from rest_framework import permissions
+from rest_framework.response import Response
+from .permissions import *
+from .serializers import *
 from .CONFIG import auth_pa
 from . import models
 from rest_framework.decorators import action
 import json
 import requests
+from rest_framework import generics
+from rest_framework import status
+
 # Create your views here.
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = Users.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    @action(methods=['GET'], detail = False, url_path='projects',url_name='user-projects')
+    def user_projects(self,request):
+        if(request.user.is_authenticated):
+            project_data = ProjectCardSerializer(request.user.projects.all(), many = True)
+            # card_data = CardSerializer(request.user.cards.all(),many = True)
+            return Response(project_data.data)
+        else:
+            return HttpResponseForbidden()
+    
+    @action(methods=['GET'], detail = False, url_path='cards',url_name='user-cards')
+    def user_cards(self,request):
+        if(request.user.is_authenticated):
+            project_data = CardProjectSerializer(request.user.cards.all(), many = True)
+            # card_data = CardSerializer(request.user.cards.all(),many = True)
+            return Response(project_data.data)
+        else:
+            return HttpResponseForbidden()
+    
+    @action(methods=['GET'], detail = False, url_path='comments',url_name='user-comments')
+    def user_comments(self,request):
+        if(request.user.is_authenticated):
+            comments_by_user = CommentSerializer(request.user.comment_user.all(), many = True)
+            return Response(comments_by_user.data)
+        else:
+            return HttpResponseForbidden()
+    
+    @action(methods=['GET'], detail = False, url_path='info',url_name='user-info')
+    def user_self_info(self,request):
+        if(request.user.is_authenticated):
+            info = UserSerializer(request.user)
+            return Response(info.data)
+        else:
+            return HttpResponseForbidden()
+
+    @action(methods=['GET'], detail = False, url_path='logout',url_name='logout')
+    def user_logout(self,request):
+        if request.user.is_authenticated:
+            logout(request)
+            return JsonResponse({'status': 'Logged out'})
+        else:
+            return HttpResponseForbidden()
+
+# class AdminViewSet(viewsets.ModelViewSet):
+#     permission_classes = [IsAdmin]
+
+#     def all_users(self,request):
+#         users = Users.objects.all()
+    
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    @action(methods=['GET'], detail = False, url_path='allProjects',url_name='project-allProjects')
+    def listAllProg(self,request):
+        if(request.user.is_authenticated):
+            proj = Project.objects.all()
+            projectsAll = ProjectSerializer(proj,many=True)
+            return Response(projectsAll.data)
+        else:
+            return HttpResponseForbidden()
+    
+    @action(methods=['POST'], detail = False, url_path='mkProject',url_name='project-mkProject')
+    def mkProj(self,request):
+        if(request.user.is_authenticated):
+            proj = ProjectSerializer(data=request.data)
+            
+            if proj.is_valid():
+                proj.save(creator= request.user)
+                print(proj.validated_data.get({'members_p'}))
+                proj.save()
+
+                return Response(proj.data,status=status.HTTP_201_CREATED)
+            return Response(proj.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return HttpResponseForbidden()
+
+
+
+# class ProjectDetailSet(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Project.objects.all()
+#     serializer_class = ProjectSerializer
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+
+    
+
+
+
+
+
+
+
+
 
 def oauth_redirect(req):
     url = f"https://channeli.in/oauth/authorise/?client_id={auth_pa['CLIENT_ID']}&redirect_uri={auth_pa['REDIRECT_URI']}&state={auth_pa['STATE_STRING']}"
