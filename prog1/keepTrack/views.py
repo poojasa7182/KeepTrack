@@ -103,17 +103,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 
-# class ProjectDetailSet(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Project.objects.all()
-#     serializer_class = ProjectSerializer
-#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+class ProjectDetailSet(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 
     
-
-
-
 
 
 
