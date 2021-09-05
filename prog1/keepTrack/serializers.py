@@ -7,6 +7,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = '__all__'
+        read_only_fields=['username','name','details']
+
+# class UserProjectsSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     '''Project Serializer'''
@@ -27,12 +30,19 @@ class CardSerializer(serializers.ModelSerializer):
         model = Card
         fields = '__all__'
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentPSerializer(serializers.ModelSerializer):
     '''Comment Serializer'''
     class Meta:
-        model = Comment
+        model = Comment_p
         fields = '__all__'
+        read_only_fields = ['sender','time','project']
 
+class CommentCSerializer(serializers.ModelSerializer):
+    '''Comment Serializer'''
+    class Meta:
+        model = Comment_c
+        fields = '__all__'
+        read_only_fields = ['sender','time','card']
 
 class ProjectCardSerializer(serializers.ModelSerializer):
     card = CardSerializer(many=True, read_only = True)
@@ -48,7 +58,15 @@ class CardProjectSerializer(serializers.ModelSerializer):
     # list = ListSerializer(many = True , read_only = True)
     class Meta:
         model = Card
-        fields = ['card_name','project_c','list_c']
+        fields = ['card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description','tags_c','card']
+
+class ListProjectSerializer(serializers.ModelSerializer):
+    project_l = ProjectSerializer()
+
+    class Meta:
+        model = List
+        fields = ['list_name','project_l','start_date','due_date','is_completed','tags_l','members_l']
+
 
 # class CardListProjectSerializer(serializers.ModelSerializer):
 #     card = ProjectSerializer(many=True)

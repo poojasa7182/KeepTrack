@@ -1,4 +1,4 @@
-'''models used - user, project, lists, cards, comment_c/l/p'''
+'''models used - user, project, lists, cards, comment_c/p'''
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import datetime
@@ -108,16 +108,30 @@ class Card(models.Model):
     def __str__(self):
         return self.card_name
 
-class Comment(models.Model):
+class Comment_c(models.Model):
     '''
-    Comments for a particular card/list/project
+    Comments for a particular card
     '''
 
     comment_content = models.TextField()
-    sender = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='comment_user')
+    sender = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='commenter_c')
     time = models.DateTimeField(default=datetime.now)
-    card = models.ForeignKey(to=Card, blank=True, on_delete=models.CASCADE)
-    list = models.ForeignKey(to=List, blank=True, on_delete=models.CASCADE)
+    card = models.ForeignKey(to=Card,on_delete=models.CASCADE)
+
+    class Meta(object):
+        ordering = ['time']
+
+    def __str__(self):
+        return self.comment_content
+
+class Comment_p(models.Model):
+    '''
+    Comments for a particular project
+    '''
+
+    comment_content = models.TextField()
+    sender = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='commenter_p')
+    time = models.DateTimeField(default=datetime.now)
     project = models.ForeignKey(to=Project,on_delete=models.CASCADE)
 
     class Meta(object):

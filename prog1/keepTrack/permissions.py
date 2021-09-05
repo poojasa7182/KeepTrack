@@ -44,3 +44,35 @@ class IsAdminOrProjectAdmin(permissions.BasePermission):
             return True
         if request.user in obj.project_admins.all():
             return True
+        return False
+
+class CommentEdit(permissions.BasePermission):
+    def has_object_permission(self,request,view,obj):
+        if request.user == obj.sender :
+            return True
+        return False
+
+class NobodyCan(permissions.BasePermission):
+    def has_object_permission(self,request,view,obj):
+        return False
+
+class CommentCDelete(permissions.BasePermission):
+    def has_object_permission(self,request,view,obj):
+        if request.method in permissions.SAFE_METHODS or request.user.is_admin:
+            return True
+        if request.user in obj.cards.list_c.members_l.all():
+            return True
+        if request.user in obj.cards.project_c.members_p.all():
+            return True
+        if request.user in obj.cards.members_c.all():
+            return True
+        return request.user == obj.sender
+
+class CommentPDelete(permissions.BasePermission):
+    def has_object_permission(self,request,view,obj):
+        if request.method in permissions.SAFE_METHODS or request.user.is_admin:
+            return True
+        if request.user in obj.project.members_p.all():
+            return True
+        return request.user == obj.sender
+        

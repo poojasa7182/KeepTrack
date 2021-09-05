@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .permissions import *
 from .serializers import *
 from .CONFIG import auth_pa
@@ -18,11 +19,11 @@ from rest_framework import status
 
 # Create your views here.
 
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = Users.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
     @action(methods=['GET'], detail = False, url_path='projects',url_name='user-projects')
     def user_projects(self,request):
@@ -45,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['GET'], detail = False, url_path='comments',url_name='user-comments')
     def user_comments(self,request):
         if(request.user.is_authenticated):
-            comments_by_user = CommentSerializer(request.user.comment_user.all(), many = True)
+            comments_by_user = CommentCSerializer(request.user.comment_user.all(), many = True)
             return Response(comments_by_user.data)
         else:
             return HttpResponseForbidden()
@@ -65,52 +66,121 @@ class UserViewSet(viewsets.ModelViewSet):
             return JsonResponse({'status': 'Logged out'})
         else:
             return HttpResponseForbidden()
-
-# class AdminViewSet(viewsets.ModelViewSet):
-#     permission_classes = [IsAdmin]
-
-#     def all_users(self,request):
-#         users = Users.objects.all()
     
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH':
+            self.permission_classes = [IsAdmin]
+        elif self.request.method == 'POST' or self.request.method == 'DELETE':
+            self.permission_classes = [NobodyCan]
+
+        return super(UserViewSet, self).get_permissions()
+
+class ProjectsOfAUser(APIView):
+    queryset = Users.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdmin]
+
+    def get(self, request, pk ,format=None):
+        user = Users.objects.get(id=pk)
+        user_data = CardProjectSerializer(user.cards.all(), many = True)
+        return Response(user_data.data)
+
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    @action(methods=['GET'], detail = False, url_path='allProjects',url_name='project-allProjects')
-    def listAllProg(self,request):
-        if(request.user.is_authenticated):
-            proj = Project.objects.all()
-            projectsAll = ProjectSerializer(proj,many=True)
-            return Response(projectsAll.data)
-        else:
-            return HttpResponseForbidden()
     
-    @action(methods=['POST'], detail = False, url_path='mkProject',url_name='project-mkProject')
-    def mkProj(self,request):
-        if(request.user.is_authenticated):
-            proj = ProjectSerializer(data=request.data)
-            
-            if proj.is_valid():
-                proj.save(creator= request.user)
-                print(proj.validated_data.get({'members_p'}))
-                proj.save()
-
-                return Response(proj.data,status=status.HTTP_201_CREATED)
-            return Response(proj.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return HttpResponseForbidden()
-
-
-
-class ProjectDetailSet(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-
-
+    def perform_create(self,serializer):
+       serializer.save(creator = self.request.user)
     
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
+                self.permission_classes = [IsAdminOrProjectAdmin]
+
+        return super(ProjectViewSet, self).get_permissions()
+
+class ListViewSet(viewsets.ModelViewSet):
+    queryset = List.objects.all()
+    serializer_class = ListProjectSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            self.permission_classes = [IsAdminOrTeamMember_l]
+        elif self.request.method == 'POST':
+            self.permission_classes = [IsAdminOrTeamMember]
+
+        return super(ListViewSet, self).get_permissions()
+
+class CardViewSet(viewsets.ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardProjectSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            self.permission_classes = [IsAdminOrTeamMember_c]
+        elif self.request.method == 'POST':
+            self.permission_classes = [IsAdminOrTeamMember_l]
+
+        return super(CardViewSet, self).get_permissions()
+
+class ListOfProjects(APIView):
+
+    def get(self, request, pk ,format=None):
+        proj = Project.objects.get(id=pk)
+        serializer = ListProjectSerializer(List.objects.filter(project_l = proj))
+        return Response(serializer.data)
+
+class CardsOfLists(APIView):
+
+    def get(self, request, pk ,format=None):
+        list = List.objects.get(id=pk)
+        serializer = CardProjectSerializer(Card.objects.filter(list_c=list))
+        return Response(serializer.data)
+
+class CommentPViewSet(viewsets.ModelViewSet):
+    queryset = Comment_p.objects.all()
+    serializer_class = CommentPSerializer
+
+    def perform_create(self,serializer):
+        serializer.save(sender = self.request.user)
+
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH':
+            self.permission_classes = [CommentEdit]
+        elif self.request.method == 'DELETE' :
+            self.permission_classes = [CommentPDelete]
+
+        return super(CommentPViewSet, self).get_permissions()
+
+class CommentCViewSet(viewsets.ModelViewSet):
+    queryset = Comment_c.objects.all()
+    serializer_class = CommentCSerializer
+
+    def perform_create(self,serializer):
+        serializer.save(sender = self.request.user)
+
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            self.permission_classes = []
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH':
+            self.permission_classes = [CommentEdit]
+        elif self.request.method == 'DELETE' :
+            self.permission_classes = [CommentCDelete]
+
+        return super(CommentCViewSet, self).get_permissions()
+
+
+
+
 
 
 
