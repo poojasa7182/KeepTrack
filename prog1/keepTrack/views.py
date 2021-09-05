@@ -1,3 +1,4 @@
+'''views '''
 from django.http.response import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect,HttpResponseBadRequest
@@ -18,12 +19,11 @@ from rest_framework import generics
 from rest_framework import status
 
 # Create your views here.
-
+'''get user projects/cards/info/comments, login/logout'''
 class UserViewSet(viewsets.ModelViewSet):
     queryset = Users.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
 
     @action(methods=['GET'], detail = False, url_path='projects',url_name='user-projects')
     def user_projects(self,request):
@@ -67,6 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return HttpResponseForbidden()
     
+    '''permissions for different types of methods'''
     def get_permissions(self):
         if self.request.method == 'GET':
             self.permission_classes = []
@@ -77,6 +78,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return super(UserViewSet, self).get_permissions()
 
+    '''get projects for a particular user other than the request user'''
 class ProjectsOfAUser(APIView):
     queryset = Users.objects.all()
     serializer_class = UserSerializer
@@ -87,6 +89,7 @@ class ProjectsOfAUser(APIView):
         user_data = CardProjectSerializer(user.cards.all(), many = True)
         return Response(user_data.data)
 
+    '''create/list/update/delete/retrieve project with needed permissions for each type of method'''
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -102,6 +105,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return super(ProjectViewSet, self).get_permissions()
 
+    '''create/list/update/delete/retrieve list with needed permissions for each type of method'''
 class ListViewSet(viewsets.ModelViewSet):
     queryset = List.objects.all()
     serializer_class = ListProjectSerializer
@@ -116,6 +120,7 @@ class ListViewSet(viewsets.ModelViewSet):
 
         return super(ListViewSet, self).get_permissions()
 
+    '''create/list/update/delete/retrieve card with needed permissions for each type of method'''
 class CardViewSet(viewsets.ModelViewSet):
     queryset = Card.objects.all()
     serializer_class = CardProjectSerializer
@@ -130,6 +135,7 @@ class CardViewSet(viewsets.ModelViewSet):
 
         return super(CardViewSet, self).get_permissions()
 
+    '''list all the lists of a given project'''
 class ListOfProjects(APIView):
 
     def get(self, request, pk ,format=None):
@@ -137,6 +143,7 @@ class ListOfProjects(APIView):
         serializer = ListProjectSerializer(List.objects.filter(project_l = proj))
         return Response(serializer.data)
 
+    '''list all the cards of a given project'''
 class CardsOfLists(APIView):
 
     def get(self, request, pk ,format=None):
@@ -144,6 +151,7 @@ class CardsOfLists(APIView):
         serializer = CardProjectSerializer(Card.objects.filter(list_c=list))
         return Response(serializer.data)
 
+    '''create/list/update/delete/retrieve comments on a particular project with needed permissions for each type of method'''
 class CommentPViewSet(viewsets.ModelViewSet):
     queryset = Comment_p.objects.all()
     serializer_class = CommentPSerializer
@@ -161,6 +169,7 @@ class CommentPViewSet(viewsets.ModelViewSet):
 
         return super(CommentPViewSet, self).get_permissions()
 
+    '''create/list/update/delete/retrieve comments on a particular project with needed permissions for each type of method'''
 class CommentCViewSet(viewsets.ModelViewSet):
     queryset = Comment_c.objects.all()
     serializer_class = CommentCSerializer
@@ -186,7 +195,7 @@ class CommentCViewSet(viewsets.ModelViewSet):
 
 
 
-
+    '''login through oauth'''
 def oauth_redirect(req):
     url = f"https://channeli.in/oauth/authorise/?client_id={auth_pa['CLIENT_ID']}&redirect_uri={auth_pa['REDIRECT_URI']}&state={auth_pa['STATE_STRING']}"
     return HttpResponseRedirect(url)
