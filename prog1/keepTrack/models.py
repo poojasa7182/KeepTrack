@@ -63,7 +63,7 @@ class List(models.Model):
     members- assigned to work on the list 
     '''
 
-    list_name = models.CharField(max_length=200,unique=False)
+    list_name = models.CharField(max_length=200)
     project_l = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     start_date = models.DateTimeField(default=datetime.now)
     due_date = models.DateTimeField()
@@ -75,7 +75,10 @@ class List(models.Model):
     class Meta(object):
         ordering = ['due_date']
         '''unique list names in a particular project model'''
-        UniqueConstraint(fields=['list_name','project_l'], name='unique_list')
+        unique_together = ('list_name', 'project_l')
+        # constraints=[
+        #     UniqueConstraint(fields=['list_name','project_l'], name='unique_list')
+        # ]
 
     def __str__(self):
         return self.list_name
@@ -103,7 +106,8 @@ class Card(models.Model):
     class Meta(object):
         ordering = ['due_date']
         '''unique card names in a particular list model'''
-        UniqueConstraint(fields=['project_c','list_c','card_name'], name='unique_card')
+        unique_together = ('list_c', 'card_name')
+        
 
     def __str__(self):
         return self.card_name

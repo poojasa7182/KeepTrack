@@ -21,6 +21,6 @@ urlpatterns = [
     path('',include(router.urls)),
     path('list/<int:pk>/cards', ListOfProjects.as_view()),
     path('project/<int:pk>/list', CardsOfLists.as_view()),
-    path('user/<int:pk>/tasks', ProjectsOfAUser.as_view()),
+    path('users/<int:pk>/tasks', ProjectsOfAUser.as_view()),
     path('betw',oauth_fetch_data,name="oauth_fetch_data")
 ]

@@ -58,7 +58,7 @@ class CardProjectSerializer(serializers.ModelSerializer):
     # list = ListSerializer(many = True , read_only = True)
     class Meta:
         model = Card
-        fields = ['card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description','tags_c','card']
+        fields = ['card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description']
 
 class ListProjectSerializer(serializers.ModelSerializer):
     project_l = ProjectSerializer()
