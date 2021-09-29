@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+    # 'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'prog1.urls'
@@ -88,9 +88,10 @@ DATABASES = {
 }
 
 REST_FRAMEWORK={
-        'DEFAULT AUTHENTICATION CLASSES' : (
-            'rest_framework.authentication.SessionAuthentication'
-            ),
+        'DEFAULT AUTHENTICATION CLASSES' : 
+            ['rest_framework.authentication.SessionAuthentication',
+             'rest_framework.authentication.BasicAuthentication',]
+            ,
         'DEFAULT_PERMISSION_CLASSES':(
             'rest_framework.permissions.IsAuthenticated',
         ),
@@ -123,6 +124,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SESSION_COOKIE_NAME = 'keepTrack_session'
+
+CSRF_COOKIE_NAME = 'keepTrack_csrftoken'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

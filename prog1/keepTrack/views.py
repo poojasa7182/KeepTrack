@@ -1,6 +1,6 @@
 '''views '''
 from django.http.response import HttpResponseForbidden, HttpResponseNotAllowed
-from django.shortcuts import redirect, render
+from django.shortcuts import  redirect, render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect,HttpResponseBadRequest
 from requests.api import request
 from django.contrib.auth import login, logout
@@ -22,7 +22,7 @@ class UserViewSet(viewsets.ModelViewSet):
     '''get user projects/cards/info/comments, login/logout'''
     queryset = Users.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsEnabeled]
+    permission_classes = [IsEnabeled]
 
     @action(methods=['GET'], detail = False, url_path='projects',url_name='user-projects')
     def user_projects(self,request):
@@ -58,78 +58,8 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return HttpResponseForbidden()
 
-    @action(methods=['GET'], detail = False, url_path='login',url_name='user-login')
-    def oauth_fetch_data(self,req):
-        try:
-            auth_code = req.GET['code'] 
-        except:
-            return HttpResponse("koi na1")
-        parameters = {
-            'client_id':auth_pa['CLIENT_ID'],
-            'client_secret':auth_pa['CLIENT_SECRET'],
-            'grant_type':'authorization_code',
-            'redirect_uri':auth_pa['REDIRECT_URI'],
-            'code':auth_code,
-        }
-        res = requests.post('https://channeli.in/open_auth/token/', data=parameters)
-        
-        if (res.status_code == 200):
-            access_token=res.json()['access_token']
-            refresh_token= res.json()['refresh_token']
-            print(access_token)
-        else:
-            return HttpResponse(res.status_code)
-
-        header={
-            "Authorization": "Bearer "+access_token,
-        }
-        res1 = requests.get("https://channeli.in/open_auth/get_user_data/", headers=header)
-        
-        data_stu = res1.json()
-        isMaintainer = False
-        #print(data_stu)
-        for role in data_stu['person']['roles']:
-            if role['role']=='Maintainer':
-                isMaintainer = True
-        if isMaintainer:
-            try: 
-                student = models.Users.objects.get(username = data_stu['username'])
-                print(student)
-                if(student.banned):
-                    return HttpResponse("U are banned")
-            except models.Users.DoesNotExist:
-                student = models.Users(
-                    username = data_stu['username'],
-                    name = data_stu['person']['fullName'],
-                    is_admin = False,
-                    details = 'Maintainer',
-                    banned = False
-                )
-                student.save()
-            
-            try:
-                login(request=req, user = student)
-                #print(req+student)
-            except:
-                print("hiiii")
-            info={
-                'data':'Done!', 
-                'isAdmin':student.is_admin , 
-                'isEnabled' : student.banned
-            }
-
-            res= Response(info, status=status.HTTP_202_ACCEPTED)
-            res['Access-Control-Allow-Origin']='http://127.0.0.1:3000'
-            res['Access-Control-Allow-Credentials']='true'
-            # res['withCredentials']='true'
-
-            # res['Access-Control-Expose-Headers']='*'
-
-            # access-control-expose-headers: Set-Cookie
-            return res
-            # return redirect("http://localhost:3000/project")
-        else : 
-            return HttpResponse("This app can only be accessed by IMG members :p")
+    #@action(methods=['GET'], detail = False, url_path='login',url_name='user-login')
+    
 
     @action(methods=['GET'], detail = False, url_path='logout',url_name='logout')
     def user_logout(self,request):
@@ -150,6 +80,13 @@ class UserViewSet(viewsets.ModelViewSet):
             self.permission_classes = [NobodyCan,IsEnabeled]
 
         return super(UserViewSet, self).get_permissions()
+    
+    def dispatch(self, *args, **kwargs):
+        response = super(UserViewSet, self).dispatch(*args, **kwargs)
+        response['Access-Control-Allow-Origin']='http://localhost:3000'
+        response['Access-Control-Allow-Credentials']='true'
+
+        return response
 
     
 class ProjectsOfAUser(APIView):
@@ -175,9 +112,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET' or self.request.method == 'POST':
             self.permission_classes = [IsEnabeled]
         elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
-                self.permission_classes = [IsAdminOrProjectAdmin,IsEnabeled,permissions.IsAuthenticatedOrReadOnly]
+                self.permission_classes = [IsAdminOrProjectAdmin,IsEnabeled]
 
         return super(ProjectViewSet, self).get_permissions()
+    
+    def dispatch(self, *args, **kwargs):
+        response = super(ProjectViewSet, self).dispatch(*args, **kwargs)
+        response['Access-Control-Allow-Origin']='http://localhost:3000'
+        response['Access-Control-Allow-Credentials']='true'
+
+        return response
 
 class ListViewSet(viewsets.ModelViewSet):
     '''create/list/update/delete/retrieve list with needed permissions for each type of method'''
@@ -294,6 +238,133 @@ def oauth_redirect(req):
     url = f"https://channeli.in/oauth/authorise/?client_id={auth_pa['CLIENT_ID']}&redirect_uri={auth_pa['REDIRECT_URI']}&state={auth_pa['STATE_STRING']}"
     return HttpResponseRedirect(url)
 
+# def oauth_fetch_data(req):
+#         try:
+#             auth_code = req.GET['code'] 
+#         except:
+#             return HttpResponse("koi na1")
+#         parameters = {
+#             'client_id':auth_pa['CLIENT_ID'],
+#             'client_secret':auth_pa['CLIENT_SECRET'],
+#             'grant_type':'authorization_code',
+#             'redirect_uri':auth_pa['REDIRECT_URI'],
+#             'code':auth_code,
+#         }
+#         res = requests.post('https://channeli.in/open_auth/token/', data=parameters)
+        
+#         if (res.status_code == 200):
+#             access_token=res.json()['access_token']
+#             refresh_token= res.json()['refresh_token']
+#             print(access_token)
+#         else:
+#             return HttpResponse(res.status_code)
 
+#         header={
+#             "Authorization": "Bearer "+access_token,
+#         }
+#         res1 = requests.get("https://channeli.in/open_auth/get_user_data/", headers=header)
+        
+#         data_stu = res1.json()
+#         isMaintainer = False
+#         #print(data_stu)
+#         for role in data_stu['person']['roles']:
+#             if role['role']=='Maintainer':
+#                 isMaintainer = True
+#         if isMaintainer:
+#             try: 
+#                 student = models.Users.objects.get(username = data_stu['username'])
+#                 print(student)
+#                 if(student.banned):
+#                     return HttpResponse("U are banned")
+#             except models.Users.DoesNotExist:
+#                 student = models.Users(
+#                     username = data_stu['username'],
+#                     name = data_stu['person']['fullName'],
+#                     is_admin = False,
+#                     details = 'Maintainer',
+#                     banned = False
+#                 )
+#                 student.save()
+            
+#             try:
+#                 login(request=req, user = student)
+#                 print("Hii")
+#             except:
+#                 print("hiiii")
+#             # info={
+#             #     'data':'Done!', 
+#             #     'isAdmin':student.is_admin , 
+#             #     'isEnabled' : student.banned
+#             # }
 
-   
+#             # res= Response(info, status=status.HTTP_202_ACCEPTED)
+#             # res['Access-Control-Allow-Origin']='http://127.0.0.1:3000'
+#             # res['Access-Control-Allow-Credentials']='true'
+#             # # res['withCredentials']='true'
+
+#             # # res['Access-Control-Expose-Headers']='*'
+
+#             # # access-control-expose-headers: Set-Cookie
+#             # return res
+#             #return redirect("http://localhost:3000/project")
+#             return HttpResponse("chalo login hogaya")
+#         else : 
+#             return HttpResponse("This app can only be accessed by IMG members :p")
+
+def oauth_fetch_data(req):
+    try:
+        auth_code = req.GET['code']
+    except:
+        return HttpResponseBadRequest()
+    parameters = {
+        'client_id':auth_pa['CLIENT_ID'],
+        'client_secret':auth_pa['CLIENT_SECRET'],
+        'grant_type':'authorization_code',
+        'redirect_uri':auth_pa['REDIRECT_URI'],
+        'code':auth_code,
+    }
+    res = requests.post('https://channeli.in/open_auth/token/', data=parameters)
+
+    if (res.status_code == 200):
+        access_token=res.json()['access_token']
+        refresh_token= res.json()['refresh_token']
+    else:
+        return HttpResponseBadRequest()
+
+    header={
+        "Authorization": "Bearer "+access_token,
+    }
+    res1 = requests.get("https://channeli.in/open_auth/get_user_data/", headers=header)
+
+    data_stu = res1.json()
+
+    isMaintainer = False
+
+    for role in data_stu['person']['roles']:
+        if role['role']=='Maintainer':
+            isMaintainer = True
+    if isMaintainer:
+        try: 
+            student = models.Users.objects.get(username = data_stu['username'])
+            if(student.banned):
+                return HttpResponse("U are banned")
+        except models.Users.DoesNotExist:
+            student = models.Users(
+                username = data_stu['username'],
+                name = data_stu['person']['fullName'],
+                is_admin = False,
+                details = 'Maintainer',
+                banned = False
+            )
+            student.save()
+        try:
+            login(request=req, user=student)
+            # print(req.student)
+            # print(student)
+        except:
+            print("kya kare nahi hora")
+        # return HttpResponse("chalo login hogaya!!")
+        return redirect("http://localhost:3000/addProject")
+    else : 
+        HttpResponse("This app can only be accessed by IMG members :p")
+    return HttpResponse("hi")   

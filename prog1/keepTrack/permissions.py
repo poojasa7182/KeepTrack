@@ -22,11 +22,13 @@ class IsAdminP(permissions.BasePermission):
 '''check if the user is enabled or not'''
 class IsEnabeled(permissions.BasePermission):
     def has_permission(self, request, view):
-        for p in Users.objects.all().iterator():
-            if p.banned and p == request.user:
-                return False
-        return True
-
+        # print(request.user)
+        if(request.user.is_authenticated):
+            for p in Users.objects.all().iterator():
+                if p.banned and p == request.user:
+                    return False
+            return True
+        return False
 '''if the user is an admin or part of the team'''
 class  IsAdminOrTeamMember(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
