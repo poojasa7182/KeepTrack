@@ -29,14 +29,17 @@ class IsEnabeled(permissions.BasePermission):
                     return False
             return True
         return False
+
 '''if the user is an admin or part of the team'''
 class  IsAdminOrTeamMember(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
+        print(obj.creator)
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
         if request.user in obj.members_p.all():
             return True
-        return False
+        # print(request.user == obj.creator)
+        return request.user == obj.creator
 
 '''if the user is part of the team or the list or is an admin'''
 class  IsAdminOrTeamMember_l(permissions.BasePermission):
@@ -45,8 +48,8 @@ class  IsAdminOrTeamMember_l(permissions.BasePermission):
             return True
         if request.user in obj.project_l.members_p.all():
             return True
-        if request.user in obj.members_l.all():
-            return True
+        # if request.user in obj.members_l.all():
+        #     return True
         return False
 
 '''if the user is part of the team or the list or the card or is an admin'''
@@ -56,20 +59,20 @@ class  IsAdminOrTeamMember_c(permissions.BasePermission):
             return True
         if request.user in obj.project_c.members_p.all():
             return True
-        if request.user in obj.list_c.members_l.all():
-            return True
+        # if request.user in obj.list_c.members_l.all():
+        #     return True
         if request.user in obj.members_c.all():
             return True
         return False
 
 '''if the user id an admin or project admin'''
-class IsAdminOrProjectAdmin(permissions.BasePermission):
+class IsAdminOrProjectAdminOrCreator(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
         if request.user in obj.project_admins.all():
             return True
-        return False
+        return request.user == obj.creator
 
 '''if the user has written that comment'''
 class CommentEdit(permissions.BasePermission):
@@ -92,8 +95,8 @@ class CommentCDelete(permissions.BasePermission):
     def has_object_permission(self,request,view,obj):
         if request.method in permissions.SAFE_METHODS or request.user.is_admin:
             return True
-        if request.user in obj.cards.list_c.members_l.all():
-            return True
+        # if request.user in obj.cards.list_c.members_l.all():
+        #     return True
         if request.user in obj.cards.project_c.members_p.all():
             return True
         if request.user in obj.cards.members_c.all():

@@ -9,8 +9,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields=['username','name','details']
 
-# class UserProjectsSerializer(serializers.ModelSerializer):
-
 class ProjectSerializer(serializers.ModelSerializer):
     '''Project Serializer'''
     class Meta:
@@ -49,7 +47,7 @@ class ProjectCardSerializer(serializers.ModelSerializer):
     # list = ListSerializer(many = True , read_only = True)
     class Meta:
         model = Project
-        fields = ['project_name','card']
+        fields = ['project_name','card','id', 'wiki', 'is_completed']
         read_only_fields = ['card']
 
 class CardProjectSerializer(serializers.ModelSerializer):
@@ -58,14 +56,13 @@ class CardProjectSerializer(serializers.ModelSerializer):
     # list = ListSerializer(many = True , read_only = True)
     class Meta:
         model = Card
-        fields = ['card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description']
+        fields = ['id','card_name','list_c','start_date','due_date','is_completed','project_c','members_c','description']
 
 class ListProjectSerializer(serializers.ModelSerializer):
-    project_l = ProjectSerializer()
-
+    cardsOfList = CardSerializer(many=True, read_only = True)
     class Meta:
         model = List
-        fields = ['list_name','project_l','start_date','due_date','is_completed','tags_l','members_l']
+        fields = ['id','list_name','project_l','is_completed','cardsOfList']
 
 
 # class CardListProjectSerializer(serializers.ModelSerializer):

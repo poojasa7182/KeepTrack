@@ -1,7 +1,7 @@
 '''models used - user, project, lists, cards, comment_c/p'''
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime
+from datetime import date, datetime
 from django.db.models.base import Model
 from django.db.models.constraints import UniqueConstraint
 from django.db.models.deletion import SET_NULL
@@ -64,16 +64,16 @@ class List(models.Model):
     '''
 
     list_name = models.CharField(max_length=200)
-    project_l = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    start_date = models.DateTimeField(default=datetime.now)
-    due_date = models.DateTimeField()
+    project_l = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='listsOfProject')
+    # start_date = models.DateField()
+    # due_date = models.DateField()
     is_completed = models.BooleanField(default=False)
     tags_l = TaggableManager()
-    members_l = models.ManyToManyField(Users, related_name='lists')
+    # members_l = models.ManyToManyField(Users, related_name='lists')
 
 
     class Meta(object):
-        ordering = ['due_date']
+        ordering = ['list_name']
         '''unique list names in a particular project model'''
         unique_together = ('list_name', 'project_l')
         # constraints=[
@@ -94,10 +94,10 @@ class Card(models.Model):
     '''
 
     card_name = models.CharField(max_length=200,unique=False)
-    list_c = models.ForeignKey(to=List, on_delete=models.CASCADE)
+    list_c = models.ForeignKey(to=List, on_delete=models.CASCADE, related_name='cardsOfList')
     project_c = models.ForeignKey(to=Project, on_delete=models.CASCADE,related_name='card')
-    start_date = models.DateTimeField(default=datetime.now)
-    due_date = models.DateTimeField()
+    start_date = models.DateField()
+    due_date = models.DateField()
     is_completed = models.BooleanField(default=False)
     members_c = models.ManyToManyField(Users, related_name='cards')
     description = models.TextField()

@@ -89,17 +89,28 @@ class UserViewSet(viewsets.ModelViewSet):
         return response
 
     
-class ProjectsOfAUser(APIView):
+class CardsOfAUser(APIView):
     '''get projects for a particular user other than the request user'''
     queryset = Users.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminP,IsEnabeled]
+    permission_classes = [IsEnabeled]
 
     def get(self, request, pk ,format=None):
         user = Users.objects.get(id=pk)
         user_data = CardProjectSerializer(user.cards.all(), many = True)
         return Response(user_data.data)
-    
+
+class ProjectsOfAUser(APIView):
+    '''get projects for a particular user other than the request user'''
+    queryset = Users.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsEnabeled]
+
+    def get(self, request, pk ,format=None):
+        user = Users.objects.get(id=pk)
+        user_data = ProjectCardSerializer(user.projects.all(), many = True)
+        return Response(user_data.data)
+
 class ProjectViewSet(viewsets.ModelViewSet):
     '''create/list/update/delete/retrieve project with needed permissions for each type of method'''
     queryset = Project.objects.all()
@@ -112,10 +123,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET' or self.request.method == 'POST':
             self.permission_classes = [IsEnabeled]
         elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
-                self.permission_classes = [IsAdminOrProjectAdmin,IsEnabeled]
+                self.permission_classes = [IsAdminOrProjectAdminOrCreator]
 
         return super(ProjectViewSet, self).get_permissions()
-    
+     
     def dispatch(self, *args, **kwargs):
         response = super(ProjectViewSet, self).dispatch(*args, **kwargs)
         response['Access-Control-Allow-Origin']='http://localhost:3000'
@@ -159,25 +170,28 @@ class CardViewSet(viewsets.ModelViewSet):
             try:
                 proj = Project.objects.get(id=int(self.request.data.get('project_c'))) 
                 list = List.objects.get(id=int(self.request.data.get('list_c')))
+                print(proj)
+                print(list)
+                print(list.project_l)
                 if(list.project_l!=proj):
                     self.permission_classes = [NobodyCan]
                 elif(self.request.user in proj.members_p.all()):
                     self.permission_classes = [IsEnabeled]
-                elif (self.request.user in list.members_l.all()):
-                    self.permission_classes = [IsEnabeled]
+                # elif (self.request.user in list.members_l.all()):
+                #     self.permission_classes = [IsEnabeled]
                 else:
                     self.permission_classes = [NobodyCan]
             except:
                 self.permission_classes = [IsAdminOrTeamMember_l,IsEnabeled]
         return super(CardViewSet, self).get_permissions()
- 
+  
 class ListOfProjects(APIView):
     '''list all the lists of a given project'''
     permission_classes = [IsEnabeled]
 
     def get(self, request, pk ,format=None):
         proj = Project.objects.get(id=pk)
-        serializer = ListProjectSerializer(List.objects.filter(project_l = proj))
+        serializer = ListProjectSerializer(proj.listsOfProject.all(), many = True)
         return Response(serializer.data)
    
 class CardsOfLists(APIView):
@@ -186,7 +200,7 @@ class CardsOfLists(APIView):
 
     def get(self, request, pk ,format=None):
         list = List.objects.get(id=pk)
-        serializer = CardProjectSerializer(Card.objects.filter(list_c=list))
+        serializer = CardProjectSerializer(list.cardsOfList.all(), many = True)
         return Response(serializer.data)
 
 class CommentPViewSet(viewsets.ModelViewSet):
@@ -364,7 +378,7 @@ def oauth_fetch_data(req):
         except:
             print("kya kare nahi hora")
         # return HttpResponse("chalo login hogaya!!")
-        return redirect("http://localhost:3000/addProject")
+        return redirect("http://localhost:3000/project")
     else : 
         HttpResponse("This app can only be accessed by IMG members :p")
     return HttpResponse("hi")   

@@ -19,8 +19,9 @@ router.register(r'comments_p',views.CommentPViewSet, basename='comment_p')
 urlpatterns = [
     path('login', oauth_redirect, name="oauth_redirect"),
     path('',include(router.urls)),
-    path('list/<int:pk>/cards', ListOfProjects.as_view()),
-    path('project/<int:pk>/list', CardsOfLists.as_view()),
-    path('users/<int:pk>/tasks', ProjectsOfAUser.as_view()),
+    path('list/<int:pk>/cards', CardsOfLists.as_view()),
+    path('project/<int:pk>/list', ListOfProjects.as_view()),
+    path('users/<int:pk>/tasks', CardsOfAUser.as_view()), 
+    path('users/<int:pk>/projects', ProjectsOfAUser.as_view()),
     path('betw',oauth_fetch_data,name="oauth_fetch_data")
 ]
