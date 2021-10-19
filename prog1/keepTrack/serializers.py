@@ -30,17 +30,27 @@ class CardSerializer(serializers.ModelSerializer):
 
 class CommentPSerializer(serializers.ModelSerializer):
     '''Comment Serializer'''
+    sender = UserSerializer()
+    
     class Meta:
         model = Comment_p
         fields = '__all__'
-        read_only_fields = ['sender','time','project']
+        read_only_fields = ['sender','time']
 
 class CommentCSerializer(serializers.ModelSerializer):
     '''Comment Serializer'''
+    
     class Meta:
         model = Comment_c
         fields = '__all__'
-        read_only_fields = ['sender','time','card']
+
+class CommentCUserSerializer(serializers.ModelSerializer):
+    '''Comment Serializer'''
+    sender = UserSerializer()
+
+    class Meta:
+        model = Comment_c
+        fields = '__all__'
 
 class ProjectCardSerializer(serializers.ModelSerializer):
     card = CardSerializer(many=True, read_only = True)

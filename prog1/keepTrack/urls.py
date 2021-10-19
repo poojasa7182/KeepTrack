@@ -23,5 +23,6 @@ urlpatterns = [
     path('project/<int:pk>/list', ListOfProjects.as_view()),
     path('users/<int:pk>/tasks', CardsOfAUser.as_view()), 
     path('users/<int:pk>/projects', ProjectsOfAUser.as_view()),
-    path('betw',oauth_fetch_data,name="oauth_fetch_data")
+    path('card/<int:pk>/comments', CommentsOfACard.as_view()),
+    path('betw',Login_oauth.as_view())
 ]

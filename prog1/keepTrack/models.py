@@ -24,6 +24,8 @@ class Users(AbstractUser):
     is_admin = models.BooleanField(default=False)
     details = models.CharField(max_length=200)
     banned = models.BooleanField(default=False)
+    profilePic = models.CharField(max_length=500, null=True)
+    email = models.CharField(max_length=500, null=True)
 
     class Meta:
         ordering = ['username']
@@ -40,8 +42,8 @@ class Project(models.Model):
     '''
     #need to add project for users
     project_name = models.CharField(max_length=200,unique=True)
-    start_date = models.DateTimeField(default=datetime.now)
-    due_date = models.DateTimeField()
+    start_date = models.DateField()
+    due_date = models.DateField()
     wiki = RichTextField()
     is_completed = models.BooleanField(default=False)
     creator = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='proj_creator')
@@ -120,7 +122,7 @@ class Comment_c(models.Model):
     comment_content = models.TextField()
     sender = models.ForeignKey(to=Users, null=True, on_delete=SET_NULL, related_name='commenter_c')
     time = models.DateTimeField(default=datetime.now)
-    card = models.ForeignKey(to=Card,on_delete=models.CASCADE)
+    card = models.ForeignKey(to=Card,on_delete=models.CASCADE, related_name='commentsOfCard')
 
     class Meta(object):
         ordering = ['time']
