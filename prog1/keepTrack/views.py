@@ -18,6 +18,9 @@ import requests
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view
+from channels.layers import get_channel_layer
+channel_layer = get_channel_layer()
+from asgiref.sync import async_to_sync
 
 class UserViewSet(viewsets.ModelViewSet):
     '''get user projects/cards/info/comments, login/logout'''
@@ -243,6 +246,17 @@ class CommentCViewSet(viewsets.ModelViewSet):
     '''create/list/update/delete/retrieve comments on a particular project with needed permissions for each type of method'''
     queryset = Comment_c.objects.all()
     serializer_class = CommentCUserSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        ser = CommentCSerializer(instance=instance)
+        group_name = 'chat_card_'+ str(ser.data['card'])
+        if instance.sender == request.user:
+            self.perform_destroy(instance)
+        else:
+            return Response({"error": "comment can be modified only by its owner"}, status=status.HTTP_401_UNAUTHORIZED)
+        async_to_sync(channel_layer.group_send)(group_name, {"type": "delete_comment", "message":ser.data})
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
         if self.request.method == 'GET' or self.request.method == 'POST':
