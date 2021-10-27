@@ -258,6 +258,27 @@ class CommentCViewSet(viewsets.ModelViewSet):
         async_to_sync(channel_layer.group_send)(group_name, {"type": "delete_comment", "message":ser.data})
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        # print(instance)
+        if(instance.sender==request.user):
+            self.perform_update(serializer)
+        else:
+            return Response({"error":"comment can be modified only by its creator"}, status=status.status.HTTP_400_BAD_REQUEST)
+        ser = CommentCUserSerializer(instance=instance)
+        print(ser, ser.data)
+        group_name = 'chat_card_'+ str(ser.data['card'])
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        async_to_sync(channel_layer.group_send)(group_name, {"type": "modify_comment", "message":ser.data})
+        return Response(serializer.data)
+
     def get_permissions(self):
         if self.request.method == 'GET' or self.request.method == 'POST':
             self.permission_classes = [IsEnabeled]

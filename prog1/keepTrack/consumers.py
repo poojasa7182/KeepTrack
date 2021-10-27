@@ -52,6 +52,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'comment': comment
         }))
 
+    async def modify_comment(self, event):
+        comment = event['message']
+        # print("en")
+        await self.send(text_data=json.dumps({
+            'info':'edit',
+            'comment': comment
+        }))
+
     @database_sync_to_async
     def save_data(self, data):
         serializer = CommentCSerializer(data=data)
