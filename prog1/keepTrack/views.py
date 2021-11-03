@@ -296,13 +296,22 @@ def oauth_redirect(req):
     url = f"https://channeli.in/oauth/authorise/?client_id={auth_pa['CLIENT_ID']}&redirect_uri={auth_pa['REDIRECT_URI']}&state={auth_pa['STATE_STRING']}"
     return HttpResponseRedirect(url)
 
+class Login2(viewsets.ModelViewSet):
+    queryset = Users.objects.all()
+    serializer_class = UserSerializer
+
+    @action(methods=['GET'], detail = False)
+    def login2(self,req):
+        user = Users.objects.get(id=1)
+        login(req,user)
+        return HttpResponse('Hii')
 
 class Login_oauth(APIView):
     permission_classes = [permissions.AllowAny]
-
+    
     def get(self,req):
         try:
-            auth_code = req.GET['code']
+            auth_code = self.request.query_params.get('code')
         except:
             return HttpResponseBadRequest()
         parameters = {
@@ -319,7 +328,6 @@ class Login_oauth(APIView):
             refresh_token= res.json()['refresh_token']
         else:
             return HttpResponseBadRequest()
-
         header={
             "Authorization": "Bearer "+access_token,
         }
@@ -328,7 +336,6 @@ class Login_oauth(APIView):
         data_stu = res1.json()
 
         isMaintainer = False
-
         for role in data_stu['person']['roles']:
             if role['role']=='Maintainer':
                 isMaintainer = True
@@ -348,82 +355,15 @@ class Login_oauth(APIView):
                 student.save()
             try:
                 login(request=req, user=student)
-                # print(req.student)
-                # print(student)
             except:
                 print("kya kare nahi hora")
-            # return HttpResponse("chalo login hogaya!!")
-            return redirect("http://localhost:3000/project")
+            res= Response( status=status.HTTP_202_ACCEPTED)
+            res['Access-Control-Allow-Origin']='http://localhost:3000'
+            res['Access-Control-Allow-Credentials']='true'
+            return res
         else : 
             HttpResponse("This app can only be accessed by IMG members :p")
         return HttpResponse("hi")   
 
 
-    # def post(self,req):
-    #     try:
-    #         auth_code = req.data.get('code')
-    #     except:
-    #         return HttpResponseBadRequest()
-    #     parameters = {
-    #         'client_id':auth_pa['CLIENT_ID'],
-    #         'client_secret':auth_pa['CLIENT_SECRET'],
-    #         'grant_type':'authorization_code',
-    #         'redirect_uri':auth_pa['REDIRECT_URI'],
-    #         'code':auth_code,
-    #     }
-    #     res = requests.post('https://channeli.in/open_auth/token/', data=parameters)
-    #     # print("hello7")
-    #     if (res.status_code == 200):
-    #         access_token=res.json()['access_token']
-    #         refresh_token= res.json()['refresh_token']
-    #     else:
-    #         return HttpResponseBadRequest()
-
-    #     header={
-    #         "Authorization": "Bearer "+access_token,
-    #     }
-    #     res1 = requests.get("https://channeli.in/open_auth/get_user_data/", headers=header)
-    #     # print("hello6")
-    #     data_stu = res1.json()
-
-    #     isMaintainer = False
-
-    #     for role in data_stu['person']['roles']:
-    #         if role['role']=='Maintainer':
-    #             isMaintainer = True
-    #     # print("hello5")
-    #     if isMaintainer:
-    #         try: 
-    #             student = models.Users.objects.get(username = data_stu['username'])
-    #             if(student.banned):
-    #                 return HttpResponse("U are banned")
-    #         except models.Users.DoesNotExist:
-    #             temp = data_stu['person']['displayPicture']
-    #             if(temp!=''):
-    #                 temp = 'https://channeli.in' + data_stu['person']['displayPicture']
-    #             student = models.Users(
-    #                 username = data_stu['username'],
-    #                 name = data_stu['person']['fullName'],
-    #                 is_admin = False,
-    #                 details = 'Maintainer',
-    #                 banned = False,
-    #                 profilePic =temp,
-    #                 email = data_stu['contactInformation']['emailAddress']
-    #             )
-    #             student.save()
-    #         # print(student)
-    #         try:
-    #             login(request=req, user=student)
-    #             print("hello3")
-    #         except:
-    #             print("hello")
-    #             # print("hello2")
-    #         # print("hello1")
-    #         res= Response( status=status.HTTP_202_ACCEPTED)
-    #         res['Access-Control-Allow-Origin']='http://localhost:3000'
-    #         res['Access-Control-Allow-Credentials']='true'
-    #         return res
-    #         return redirect("http://localhost:3000/project")
-    #     else : 
-    #         HttpResponse("This app can only be accessed by IMG members :p")
-    #     return HttpResponse("hi") 
+    

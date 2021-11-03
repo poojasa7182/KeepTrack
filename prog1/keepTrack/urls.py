@@ -15,6 +15,7 @@ router.register(r'list',views.ListViewSet, basename='list')
 router.register(r'card',views.CardViewSet, basename='card')
 router.register(r'comments_c',views.CommentCViewSet, basename='comment_c')
 router.register(r'comments_p',views.CommentPViewSet, basename='comment_p')
+router.register(r'login2',views.Login2, basename='login2')
 
 urlpatterns = [
     path('login', oauth_redirect, name="oauth_redirect"),

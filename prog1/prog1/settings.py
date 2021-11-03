@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-l&$80xps$!ik3!q*&^7a(&)1=-)k*g0-h04kwgt_fm)h1ends&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition
@@ -110,15 +113,15 @@ DATABASES = {
     }
 }
 
-REST_FRAMEWORK={
-        'DEFAULT AUTHENTICATION CLASSES' : 
-            ['rest_framework.authentication.SessionAuthentication',
-             'rest_framework.authentication.BasicAuthentication',]
-            ,
-        'DEFAULT_PERMISSION_CLASSES':(
-            'rest_framework.permissions.IsAuthenticated',
-        ),
-    }
+# REST_FRAMEWORK={
+#         'DEFAULT AUTHENTICATION CLASSES' : 
+#             ['rest_framework.authentication.SessionAuthentication',
+#              'rest_framework.authentication.BasicAuthentication',]
+#             ,
+#         # 'DEFAULT_PERMISSION_CLASSES':(
+#         #     'rest_framework.permissions.IsAuthenticated',
+#         # ),
+#     }
 
 
 # Password validation
@@ -168,10 +171,10 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    'http://127.0.0.1:3000',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     'http://127.0.0.1:3000',
+# ]
 
 # CORS_ORIGIN_WHITELIST = (
 #          'http://127.0.0.1:8000',
@@ -179,4 +182,11 @@ CORS_ALLOWED_ORIGINS = [
 # )
 
 # CORS_ALLOW_CREDENTIALS=True
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
